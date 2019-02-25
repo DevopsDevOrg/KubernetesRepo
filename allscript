@@ -1,0 +1,195 @@
+kubectl create ns jenkins
+touch pv.yaml
+chmod 777 pv.yaml
+echo "apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pvvol1
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany 
+  nfs:   
+    server: 35.231.233.210
+    path: "/var/nfs/general" " >> pv.yaml
+touch pvc.yaml
+chmod 777 pvc.yaml
+echo "apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvcvol1
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Mi" >> pvc.yaml
+touch jenkins-deployment.yaml
+chmod 777 jenkins-deployment.yaml
+echo "apiVersion: extensions/v1beta1 # for versions before 1.7.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-vol2
+  namespace: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkinsvol1
+  template:
+    metadata:
+      labels:
+        app: jenkinsvol1
+    spec:
+      containers:
+      - name: jenkins
+        image: frameworkdevops/framework_1.0:jenkins
+        ports:
+           - name: http-port
+             containerPort: 8080
+           - name: jnlp-port
+             containerPort: 8080
+        volumeMounts:
+              - name: jenkins-persistent-storage
+                mountPath: /bitnami
+      volumes:
+      - name: jenkins-persistent-storage
+        persistentVolumeClaim:
+           claimName: newjenkinsv2" >> jenkins-deployment.yaml
+touch jenkins-service.yaml
+chmod 777 jenkins-service.yaml
+echo "apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30000
+  selector:
+    app: jenkins" >> jenkins-service.yaml  
+kubectl create -f pv.yaml --namespace=jenkins
+kubectl create -f pvc.yaml --namespace=jenkins    
+kubectl create -f jenkins-deployment.yaml --namespace=jenkins
+kubectl create -f jenkins-service.yaml --namespace=jenkins
+kubectl create ns sonarqube
+touch sonarqube-deployment.yaml
+chmod 777 sonarqube-deployment.yaml
+echo "apiVersion: extensions/v1beta1 # for versions before 1.7.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: sonarqube-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarqube
+  template:
+    metadata:
+      labels:
+        app: sonarqube
+    spec:
+      containers:
+      - name: sonarqube
+        image: sonarqube:latest
+        ports:
+        - containerPort: 9000" >> sonarqube-deployment.yaml
+touch sonarqube-service.yaml
+chmod 777 sonarqube-service.yaml
+echo "apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube
+spec:
+  type: NodePort
+  ports:
+    - port: 9000
+      targetPort: 9000
+      nodePort: 30010
+  selector:
+    app: sonarqube" >> sonarqube-service.yaml
+kubectl create -f sonarqube-deployment.yaml --namespace=sonarqube
+kubectl create -f sonarqube-service.yaml --namespace=sonarqube
+kubectl create ns tomcat
+touch tomcat-deployment.yaml
+chmod 777 tomcat-deployment.yaml
+echo "apiVersion: extensions/v1beta1 # for versions before 1.7.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: tomcat-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tomcat
+  template:
+    metadata:
+      labels:
+        app: tomcat
+    spec:
+      containers:
+      - name: tomcat
+        image: frameworkdevops/framework_1.0:tomcat
+        ports:
+        - containerPort: 8080" >> tomcat-deployment.yaml
+touch tomcat-service.yaml
+chmod 777 tomcat-service.yaml
+echo "apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30500
+  selector:
+    app: tomcat" >> tomcat-service.yaml
+kubectl create -f tomcat-deployment.yaml --namespace=tomcat
+kubectl create -f tomcat-service.yaml --namespace=tomcat
+kubectl create ns nexus
+touch nexus-deployment.yaml
+chmod 777 nexus-deployment.yaml
+echo "apiVersion: extensions/v1beta1 # for versions before 1.7.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: nexus-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus
+  template:
+    metadata:
+      labels:
+        app: nexus
+    spec:
+      containers:
+      - name: nexus
+        image: sonatype/nexus3
+        ports:
+        - containerPort: 8081" >> nexus-deployment.yaml
+touch nexus-service.yaml
+chmod 777 nexus-service.yaml
+echo "apiVersion: v1
+kind: Service
+metadata:
+  name: nexus
+spec:
+  type: NodePort
+  ports:
+    - port: 8081
+      targetPort: 8081
+      nodePort: 32000
+  selector:
+    app: nexus" >> nexus-service.yaml
+kubectl create -f nexus-deployment.yaml --namespace=nexus
+kubectl create -f nexus-service.yaml --namespace=nexus
