@@ -1,0 +1,12 @@
+sudo apt-get update
+sudo apt-get install nfs-kernel-server
+sudo mkdir /var/nfs/general -p
+sudo chmod 777 /var/nfs/general
+sudo chown nobody:nogroup /var/nfs/general
+sudo echo "/var/nfs/general   *(rw,sync,no_subtree_check,insecure,no_root_squash)
+           /home              *(rw,sync,no_root_squash,no_subtree_check,insecure,)" >> /etc/exports
+sudo systemctl restart nfs-kernel-server
+sudo ufw enable -y
+sudo ufw allow from 34.73.34.248  to any port nfs
+sudo ufw allow from 104.196.137.243 to any port nfs
+
