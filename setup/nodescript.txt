@@ -1,0 +1,17 @@
+sudo echo "10.142.0.43  k8s-master
+10.142.0.44  worker01" >> /etc/hosts
+sudo ping -c 3 k8s-master
+sudo ping -c 3 worker01
+sudo ping -c 3 worker02
+sudo apt-get update
+sudo apt install docker.io -y
+sudo systemctl start docker
+sudo systemctl enable dockers
+sudo swapon -s
+sudo swapoff -a
+sudo apt install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo touch /etc/apt/sources.list.d/kubernetes.list
+echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >> /etc/apt/sources.list.d/kubernetes.list
+sudo apt update
+sudo apt install -y kubeadm kubelet kubectl

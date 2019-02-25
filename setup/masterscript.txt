@@ -1,0 +1,31 @@
+sudo echo "10.142.0.43  k8s-master
+10.142.0.44  worker01" >> /etc/hosts
+sudo ping -c 3 k8s-master
+sudo ping -c 3 worker01
+sudo apt-get update
+sudo apt install docker.io -y
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo swapon -s
+sudo swapoff -a
+sudo apt install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo touch /etc/apt/sources.list.d/kubernetes.list
+echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >> /etc/apt/sources.list.d/kubernetes.list
+sudo apt update
+sudo apt install -y kubeadm kubelet kubectl
+sudo kubeadm init --pod-network-cidr=10.244.10.0/16 --apiserver-advertise-address=10.142.0.43 --kubernetes-version "1.13.3"
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chmod 777 $HOME/.kube/config
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubectl get nodes
+kubectl get pods --all-namespaces
+
+
+kubeadm join 10.142.0.43:6443 --token pw199y.8an2qb32rjaiwyx5 --discovery-token-ca-cert-hash sha256:c88bfff22ee93020b11ef67db44c827330e9eb4901f3241095d6f5edb792d689
+
+  kubeadm join 10.142.0.30:6443 --token m0k2tb.jju7ll9durlmoly6 --discovery-token-ca-cert-hash sha256:516e32e0f328d741bd98b1ab26792e9e3764dfac83670f5cd6bc77f804ba9066
+
+
+
