@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1 # for versions before 1.7.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-vol
+  namespace: test3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkinsvol
+  template:
+    metadata:
+      labels:
+        app: jenkinsvol
+    spec:
+      containers:
+      - name: jenkins
+        image: 9730597302/jenkinskube
+        env:
+          - name: JAVA_OPTS
+            value: -Djenkins.install.runSetupWizard=false
+        ports:
+           - name: http-port
+             containerPort: 8080
+           - name: jnlp-port
+             containerPort: 8080
+        volumeMounts:
+              - name: jenkins-persistent-storage
+                mountPath: /var/lib/jenkins
+      volumes:
+      - name: jenkins-persistent-storage
+        persistentVolumeClaim:
+           claimName: jenkinsv2
