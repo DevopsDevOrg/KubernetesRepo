@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1 # for versions before 1.7.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-vol2
+  namespace: mavengit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkinsvol2
+  template:
+    metadata:
+      labels:
+        app: jenkinsvol2
+    spec:
+      containers:
+      - name: jenkins
+        image: eggsy84/jenkins-maven-git-docker
+        ports:
+           - name: http-port
+             containerPort: 8080
+           - name: jnlp-port
+             containerPort: 8080
+        volumeMounts:
+              - name: jenkins-persistent-storage
+                mountPath: /var/lib/jenkins
+      volumes:
+      - name: jenkins-persistent-storage
+        persistentVolumeClaim:
+           claimName: newjenkinsv2
